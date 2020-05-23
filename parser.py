@@ -12,9 +12,9 @@ def to_dict(x):
         return dict()
 
 
-def parse(tickers):
+def parse(tickers, info):
     counter = 0
-    empty_row = pd.DataFrame({key: [np.nan] for key in keys})
+    empty_row = pd.DataFrame({key: [np.nan] for key in info['keys']})
     result = pd.DataFrame()
     for ticker in tickers:
 
@@ -33,9 +33,9 @@ def parse(tickers):
         key_stats = to_dict(ticker_info.key_stats.get(ticker))
 
         row = dict()
-        row.update({key: summary_detail.get(key) for key in summary_detail_keys})
-        row.update({key: financial_data.get(key) for key in financial_data_keys})
-        row.update({key: key_stats.get(key) for key in key_stats_keys})
+        row.update({key: summary_detail.get(key) for key in info['summary_detail_keys']})
+        row.update({key: financial_data.get(key) for key in info['financial_data_keys']})
+        row.update({key: key_stats.get(key) for key in info['key_stats_keys']})
 
         try:
             price = yf.download(ticker, start=dt.date(2020, 2, 4), end=dt.date(2020, 2, 7)).Close[0]
