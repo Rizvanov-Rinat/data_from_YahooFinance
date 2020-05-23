@@ -44,7 +44,7 @@ def parse(tickers):
         row.update({key: key_stats.get(key) for key in key_stats_keys})
 
         try:
-            price = yf.download(ticker, start=dt.date(2020, 2, 4), end=dt.date(2020, 2, 7)).Close[0]
+            price = yf.download(ticker, start=dt.date(2020, 2, 4), end=dt.date(2020, 2, 7), progress=False).Close[0]
             row['growthFromFeb'] = row['previousClose'] / price - 1
         except:
             row['growthFromFeb'] = np.nan
