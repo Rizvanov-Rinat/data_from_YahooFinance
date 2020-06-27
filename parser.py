@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from yahooquery import Ticker
-import yfinance as yf
+# import yfinance as yf
 import datetime as dt
 
 
@@ -44,7 +44,8 @@ def parse(tickers):
         row.update({key: key_stats.get(key) for key in key_stats_keys})
 
         try:
-            price = yf.download(ticker, start=dt.date(2020, 2, 4), end=dt.date(2020, 2, 7), progress=False).Close[0]
+            price = ticker_info.history(start=dt.date(2020, 2, 4), end=dt.date(2020, 2, 7)).close[0]
+            # price = yf.download(ticker, start=dt.date(2020, 2, 4), end=dt.date(2020, 2, 7), progress=False).Close[0]
             row['growthFromFeb'] = row['previousClose'] / price - 1
         except:
             row['growthFromFeb'] = np.nan
