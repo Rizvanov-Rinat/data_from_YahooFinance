@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 from yahooquery import Ticker
-# import yfinance as yf
 import datetime as dt
 
 
@@ -14,14 +13,15 @@ def parse(tickers):
             return dict()
 
     summary_detail_keys = ['previousClose', 'marketCap', 'currency']
-    financial_data_keys = ['totalRevenue', 'totalCash', 'totalDebt', 'ebitda', 'freeCashflow', 'operatingCashflow',
+    financial_data_keys = ['financialCurrency', 'totalRevenue', 'totalCash', 'totalDebt', 'ebitda', 'freeCashflow', 'operatingCashflow',
                            'grossProfits', 'revenueGrowth']
     key_stats_keys = ['enterpriseValue', 'sharesOutstanding', 'floatShares', 'lastFiscalYearEnd', 'profitMargins']
-    keys = summary_detail_keys + financial_data_keys + key_stats_keys + ['growthFromFeb']
+    keys = summary_detail_keys + financial_data_keys + key_stats_keys
 
     counter = 0
     empty_row = pd.DataFrame({key: [np.nan] for key in keys})
     result = pd.DataFrame()
+    
     for ticker in tickers:
 
         if ticker is np.nan:
@@ -43,12 +43,6 @@ def parse(tickers):
         row.update({key: financial_data.get(key) for key in financial_data_keys})
         row.update({key: key_stats.get(key) for key in key_stats_keys})
 
-        try:
-            price = ticker_info.history(start=dt.date(2020, 2, 4), end=dt.date(2020, 2, 7)).close[0]
-            # price = yf.download(ticker, start=dt.date(2020, 2, 4), end=dt.date(2020, 2, 7), progress=False).Close[0]
-            row['growthFromFeb'] = row['previousClose'] / price - 1
-        except:
-            row['growthFromFeb'] = np.nan
 
         row_df = pd.DataFrame(row, index=[0])
         result = result.append(row_df)
@@ -70,7 +64,7 @@ def normalization_data(parsed_df, raw_data):
         except TypeError:
             return x
 
-    not_dividing = {'previousClose', 'currency', 'lastFiscalYearEnd', 'revenueGrowth', 'profitMargins', 'growthFromFeb'}
+    not_dividing = {'previousClose', 'currency', 'financialCurrency', 'lastFiscalYearEnd', 'revenueGrowth', 'profitMargins'}
     dividing = set(parsed_df.columns.to_list()) - not_dividing
     currencies = ['GBp', 'ZAc', 'ILA']
 
@@ -81,8 +75,5 @@ def normalization_data(parsed_df, raw_data):
             raw_data[column] = parsed_df[column]
 
     raw_data.loc[raw_data.currency.isin(currencies), 'previousClose'] /= 100
-
-    # for column in (dividing + ['previousClose']):
-    #     raw_data.loc[raw_data.currency.isin(currencies), column] /= 100
 
     return raw_data
