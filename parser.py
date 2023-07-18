@@ -13,9 +13,10 @@ def parse(tickers):
             return dict()
 
     summary_detail_keys = ['previousClose', 'marketCap', 'currency']
-    financial_data_keys = ['financialCurrency', 'totalRevenue', 'totalCash', 'totalDebt', 'ebitda', 'freeCashflow', 'operatingCashflow',
-                           'grossProfits', 'revenueGrowth']
-    key_stats_keys = ['enterpriseValue', 'sharesOutstanding', 'floatShares', 'lastFiscalYearEnd', 'profitMargins']
+    financial_data_keys = ['financialCurrency', 'totalRevenue', 'totalCash', 'totalDebt', 'ebitda', 'freeCashflow',
+        'operatingCashflow', 'grossProfits', 'revenueGrowth']
+    key_stats_keys = ['enterpriseValue', 'sharesOutstanding', 'floatShares', 'lastFiscalYearEnd', 'profitMargins',
+        '52WeekChange']
     keys = summary_detail_keys + financial_data_keys + key_stats_keys
 
     counter = 0
@@ -25,7 +26,7 @@ def parse(tickers):
     for ticker in tickers:
 
         if ticker is np.nan:
-            result = result.append(empty_row, ignore_index=True)
+            result = pd.concat([result, empty_row]).reset_index(drop=True)
             continue
 
         try:
@@ -34,7 +35,7 @@ def parse(tickers):
             financial_data = to_dict(ticker_info.financial_data.get(ticker))
             key_stats = to_dict(ticker_info.key_stats.get(ticker))
         except TypeError:
-            result = result.append(empty_row, ignore_index=True)
+            result = pd.concat([result, empty_row]).reset_index(drop=True)
             continue
 
         row = dict()
@@ -44,7 +45,7 @@ def parse(tickers):
 
 
         row_df = pd.DataFrame(row, index=[0])
-        result = result.append(row_df)
+        result = pd.concat([result, row_df]).reset_index(drop=True)
 
         counter += 1
         if counter % 100 == 0:
@@ -63,7 +64,8 @@ def normalization_data(parsed_df, raw_data):
         except TypeError:
             return x
 
-    not_dividing = {'previousClose', 'currency', 'financialCurrency', 'lastFiscalYearEnd', 'revenueGrowth', 'profitMargins'}
+    not_dividing = {'previousClose', 'currency', 'financialCurrency', 'lastFiscalYearEnd', 'revenueGrowth',
+        'profitMargins', '52WeekChange'}
     dividing = set(parsed_df.columns.to_list()) - not_dividing
     currencies = ['GBp', 'ZAc', 'ILA']
 
