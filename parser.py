@@ -21,7 +21,7 @@ def parse(tickers):
     counter = 0
     empty_row = pd.DataFrame({key: [np.nan] for key in keys})
     result = pd.DataFrame()
-    
+
     for ticker in tickers:
 
         if ticker is np.nan:
@@ -30,13 +30,12 @@ def parse(tickers):
 
         try:
             ticker_info = Ticker(ticker)
+            summary_detail = to_dict(ticker_info.summary_detail.get(ticker))
+            financial_data = to_dict(ticker_info.financial_data.get(ticker))
+            key_stats = to_dict(ticker_info.key_stats.get(ticker))
         except TypeError:
             result = result.append(empty_row, ignore_index=True)
             continue
-
-        summary_detail = to_dict(ticker_info.summary_detail.get(ticker))
-        financial_data = to_dict(ticker_info.financial_data.get(ticker))
-        key_stats = to_dict(ticker_info.key_stats.get(ticker))
 
         row = dict()
         row.update({key: summary_detail.get(key) for key in summary_detail_keys})
